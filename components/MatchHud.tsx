@@ -297,6 +297,13 @@ export default function MatchHud({
 
       <header className="match-topbar">
         <div className="match-topbar-left">
+          <img
+            src="/rough-construction-32.png"
+            alt="Rough Construction"
+            width={32}
+            height={32}
+            style={{ marginRight: '8px', display: 'block' }}
+          />
           <span className="match-mode">{MODE_SHORT[hud.mode]}</span>
           <span className="match-role">
             {hud.role === "host" ? "HOST" : hud.role === "client" ? "P2P" : "SOLO"}
