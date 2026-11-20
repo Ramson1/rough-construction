@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black-Box Tech — Baseplate | Go Digital.</title>
+  <meta name="description" content="Black-Box Tech Baseplate — a live 3D multiplayer world built by Black-Box Tech. Custom software, web and mobile apps, enterprise systems, AI and automation. Discover. Design. Deliver. GO DIGITAL.">
+  <meta name="author" content="Black-Box Tech">
+  <meta name="theme-color" content="#0d0b14">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%230d0b14'/%3E%3Crect x='6' y='6' width='52' height='52' rx='9' fill='%237b2cbf'/%3E%3Ctext x='32' y='43' font-size='30' font-family='Arial,sans-serif' font-weight='900' text-anchor='middle' fill='%23ffffff'%3EBB%3C/text%3E%3C/svg%3E">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #0d0b14;
+      color: #ffffff;
+    }
+    canvas {
+      display: block;
+    }
+
+    .overlay-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #0d0b14;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* Dark Sign Up Modal */
+    #account-overlay {
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .account-card {
+      background: #161324;
+      padding: 35px 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+      border: 1px solid #28233d;
+    }
+    .account-card h2 {
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: #ffffff;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #a09cb0;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      background: #0d0b14;
+      border: 1px solid #2a2540;
+      border-radius: 8px;
+      font-size: 14px;
+      color: white;
+      outline: none;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #7b2cbf;
+    }
+    
+    .dob-group {
+      display: flex;
+      gap: 8px;
+    }
+    .dob-group select {
+      flex: 1;
+    }
+
+    .color-pickers {
+      display: flex;
+      gap: 10px;
+    }
+    .color-pickers input {
+      height: 42px;
+      cursor: pointer;
+      padding: 2px;
+      width: 100%;
+    }
+
+    .btn-signup {
+      width: 100%;
+      background: #7b2cbf;
+      color: #ffffff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .btn-signup:hover {
+      background: #9d4edd;
+    }
+
+    /* --- Black-Box Tech Dashboard Layout --- */
+    .bbt-navbar {
+      height: 60px;
+      background: #13101f;
+      border-bottom: 1px solid #231d36;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-btn {
+      background: #1c182d;
+      border: 1px solid #2a2442;
+      color: #a09cb0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background: #7b2cbf;
+      color: #fff;
+      border-color: #9d4edd;
+    }
+
+    .nav-center {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 20px;
+    }
+    .search-bar {
+      width: 100%;
+      background: #1c182d;
+      border: 1px solid #2a2442;
+      border-radius: 20px;
+      padding: 8px 16px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .search-bar:focus {
+      border-color: #7b2cbf;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .currency-pill {
+      background: #1c182d;
+      border: 1px solid #2a2442;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #e0aaff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .currency-pill:hover {
+      background: #27213f;
+    }
+    .user-avatar-mini {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #2a2442;
+      overflow: hidden;
+      border: 1px solid #3d345e;
+      cursor: pointer;
+    }
+    .user-avatar-mini img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bbt-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 30px 20px;
+    }
+
+    /* Views / Tabs */
+    .dashboard-view {
+      display: none;
+    }
+    .dashboard-view.active-view {
+      display: block;
+    }
+
+    /* Hero Profile Section */
+    .hero-section {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .avatar-preview-box {
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, #251e3e 0%, #13101f 80%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #292243;
+    }
+    .avatar-preview-box img {
+      height: 150px;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+    }
+    .profile-info h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0;
+    }
+
+    /* Friends Section */
+    .friends-grid {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    .friend-card {
+      background: #161324;
+      border: 1px solid #231d36;
+      border-radius: 12px;
+      padding: 12px;
+      min-width: 110px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .friend-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #251e3e;
+      overflow: hidden;
+      border: 2px solid #7b2cbf;
+    }
+    .friend-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .friend-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      max-width: 90px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .friend-status {
+      font-size: 11px;
+      color: #3cb371;
+    }
+
+    /* Games Grid */
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 30px 0 15px 0;
+      color: #a09cb0;
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .bbt-game-card {
+      background: #161324;
+      border: 1px solid #231d36;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .bbt-game-card:hover {
+      transform: translateY(-4px);
+      border-color: #7b2cbf;
+    }
+    .game-thumb-box {
+      height: 120px;
+      background: #251e3e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      position: relative;
+    }
+    .game-card-details {
+      padding: 12px;
+    }
+    .game-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .game-card-stats {
+      font-size: 11px;
+      color: #6c638f;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-action {
+      background: #7b2cbf;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-action:hover {
+      background: #9d4edd;
+    }
+    .btn-secondary {
+      background: #2a2442;
+    }
+    .btn-secondary:hover {
+      background: #3a325c;
+    }
+
+    /* Inbox & Avatar Editor Styling */
+    .panel-box {
+      background: #161324;
+      border: 1px solid #231d36;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .inbox-item {
+      padding: 12px;
+      border-bottom: 1px solid #231d36;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inbox-item:last-child {
+      border-bottom: none;
+    }
+
+    #hud-instructions {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-family: monospace;
+      font-size: 13px;
+      background: rgba(0,0,0,0.6);
+      padding: 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      z-index: 5;
+      display: none;
+    }
+
+    /* Player List Overlay */
+    #player-list-hud {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 260px;
+      background: rgba(22, 19, 36, 0.9);
+      border: 1px solid #231d36;
+      border-radius: 8px;
+      padding: 12px;
+      z-index: 6;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #player-list-hud h3 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+      color: #a09cb0;
+      text-transform: uppercase;
+      border-bottom: 1px solid #231d36;
+      padding-bottom: 6px;
+    }
+    .player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+    }
+    .player-row-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .btn-add-friend {
+      background: #7b2cbf;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-add-friend:hover {
+      background: #9d4edd;
+    }
+    .btn-add-friend.added {
+      background: #2a2442;
+      color: #a09cb0;
+      cursor: default;
+    }
+
+    #chat-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      width: 340px;
+      z-index: 6;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #chat-messages {
+      max-height: 160px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+    }
+    .chat-msg {
+      background: rgba(13, 11, 20, 0.85);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      word-wrap: break-word;
+      border: 1px solid #231d36;
+    }
+    .chat-msg .sender {
+      font-weight: bold;
+      color: #c77dff;
+      margin-right: 5px;
+    }
+    #chat-input-wrapper {
+      display: flex;
+      gap: 6px;
+    }
+    #chat-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(13, 11, 20, 0.9);
+      border: 1px solid #2a2442;
+      border-radius: 6px;
+      color: white;
+      font-size: 13px;
+      outline: none;
+    }
+    #chat-input:focus {
+      border-color: #7b2cbf;
+    }
+    #chat-send-btn {
+      background: #7b2cbf;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    #settings-overlay {
+      z-index: 30;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.75);
+    }
+
+    /* --- Black-Box Tech Brand System --- */
+    :root {
+      --bbt-bg: #0d0b14;
+      --bbt-panel: #161324;
+      --bbt-border: #231d36;
+      --bbt-accent: #7b2cbf;
+      --bbt-accent-2: #9d4edd;
+      --bbt-lilac: #e0aaff;
+      --bbt-muted: #a09cb0;
+      --bbt-dim: #6c638f;
+    }
+    .bbt-wordmark { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; flex: none; }
+    .bbt-mark {
+      width: 30px; height: 30px; border-radius: 7px; flex: none;
+      background: linear-gradient(135deg, #7b2cbf, #3c096c);
+      border: 1px solid #9d4edd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900; letter-spacing: -1px; color: #fff;
+      box-shadow: 0 0 14px rgba(123,44,191,0.45);
+    }
+    .bbt-mark.lg { width: 44px; height: 44px; border-radius: 10px; font-size: 19px; }
+    .bbt-wordmark-text { display: flex; flex-direction: column; line-height: 1.1; }
+    .bbt-wordmark-text strong { font-size: 13px; font-weight: 900; letter-spacing: 0.9px; color: #fff; }
+    .bbt-wordmark-text small { font-size: 9px; letter-spacing: 1.7px; color: var(--bbt-lilac); text-transform: uppercase; font-weight: 700; }
+    .bbt-nav-brand { margin-right: 6px; padding-right: 14px; border-right: 1px solid #2a2442; }
+    .bbt-kicker { color: var(--bbt-lilac); font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+    .bbt-chip {
+      display: inline-block; background: #2a2442; border: 1px solid #3d345e;
+      color: var(--bbt-lilac); border-radius: 14px; padding: 4px 10px;
+      font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .bbt-brand-bar {
+      background: linear-gradient(100deg, #1a1130 0%, #241546 55%, #0d0b14 100%);
+      border: 1px solid #3d2b63; border-radius: 14px;
+      padding: 22px 26px; margin-bottom: 26px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+      position: relative; overflow: hidden;
+    }
+    .bbt-brand-bar::after {
+      content: "GO DIGITAL."; position: absolute; right: -8px; bottom: -26px;
+      font-size: 74px; font-weight: 900; color: rgba(224,170,255,0.055);
+      letter-spacing: 2px; pointer-events: none;
+    }
+    .bbt-brand-bar h2 { margin: 10px 0 6px; font-size: 24px; font-weight: 900; letter-spacing: 0.3px; }
+    .bbt-brand-bar p { margin: 0; color: #b9b2cc; font-size: 13px; max-width: 560px; line-height: 1.6; }
+    .bbt-link { color: var(--bbt-lilac); text-decoration: none; font-weight: 700; }
+    .bbt-link:hover { text-decoration: underline; }
+    .bbt-footer {
+      margin-top: 40px; padding: 18px 0 24px; border-top: 1px solid var(--bbt-border);
+      display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+      color: var(--bbt-dim); font-size: 11px;
+    }
+    .bbt-promo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .bbt-promo-card {
+      background: var(--bbt-panel); border: 1px solid var(--bbt-border); border-radius: 12px;
+      padding: 16px; cursor: pointer; transition: transform 0.2s, border-color 0.2s, background 0.2s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .bbt-promo-card:hover { transform: translateY(-3px); border-color: var(--bbt-accent-2); background: #1b1630; }
+    .bbt-promo-card .ico { font-size: 22px; }
+    .bbt-promo-card .ttl { font-size: 13px; font-weight: 800; color: #fff; }
+    .bbt-promo-card .desc { font-size: 11px; color: #8d85a6; line-height: 1.5; }
+    .bbt-promo-card .go { font-size: 11px; color: var(--bbt-lilac); font-weight: 700; }
+    .bbt-about-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+    .bbt-service-item { background: #100d1c; border: 1px solid var(--bbt-border); border-radius: 10px; padding: 14px; }
+    .bbt-service-item h4 { margin: 0 0 6px; font-size: 13px; color: #fff; }
+    .bbt-service-item p { margin: 0; font-size: 11px; color: #8d85a6; line-height: 1.55; }
+    .bbt-stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 4px; }
+    .bbt-stat { background: #100d1c; border: 1px solid var(--bbt-border); border-radius: 10px; padding: 12px 16px; min-width: 118px; }
+    .bbt-stat b { display: block; font-size: 20px; color: var(--bbt-lilac); }
+    .bbt-stat span { font-size: 10px; color: #8d85a6; text-transform: uppercase; letter-spacing: 1px; }
+    .bbt-cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .bbt-cta {
+      display: inline-block; background: var(--bbt-accent); color: #fff; text-decoration: none;
+      padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 13px;
+      border: none; cursor: pointer;
+    }
+    .bbt-cta:hover { background: var(--bbt-accent-2); }
+    .bbt-cta.ghost { background: #2a2442; }
+    .bbt-cta.ghost:hover { background: #3a325c; }
+    .bbt-signup-head { text-align: center; margin-bottom: 18px; }
+    .bbt-signup-head .bbt-wordmark { justify-content: center; }
+    .bbt-signup-head p { margin: 10px 0 0; color: var(--bbt-muted); font-size: 11px; letter-spacing: 0.4px; }
+    .bbt-signup-foot { margin-top: 16px; text-align: center; font-size: 10px; color: var(--bbt-dim); line-height: 1.9; }
+    .bbt-settings-foot { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--bbt-border); text-align: center; font-size: 10px; color: var(--bbt-dim); line-height: 1.9; }
+    .bbt-inbox-tag { font-size: 10px; color: var(--bbt-lilac); font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; }
+    .bbt-server-banner {
+      background: linear-gradient(100deg, #171029, #221640); border: 1px solid #3d2b63;
+      border-radius: 12px; padding: 14px 18px; margin-bottom: 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    }
+    .bbt-server-banner p { margin: 4px 0 0; font-size: 12px; color: #b9b2cc; }
+    .bbt-chat-sys .sender { color: #e0aaff !important; }
+    .bbt-chat-sys { border-color: #7b2cbf !important; background: rgba(35, 20, 62, 0.9) !important; }
+    #bbt-game-watermark {
+      position: absolute; bottom: 18px; right: 18px; z-index: 6; display: none;
+      background: rgba(22, 19, 36, 0.88); border: 1px solid #3d2b63;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 11px; color: var(--bbt-muted); text-align: right; line-height: 1.7;
+    }
+    #bbt-game-watermark .bbt-wordmark { justify-content: flex-end; }
+    @media (max-width: 760px) {
+      .bbt-nav-brand .bbt-wordmark-text { display: none; }
+      .nav-center { display: none; }
+      .bbt-brand-bar h2 { font-size: 20px; }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body>
+
+<div id="hud-instructions">
+  <b style="color:#e0aaff;letter-spacing:0.5px;">BLACK-BOX TECH · BASEPLATE</b><br><b>Controls:</b><br>
+  WASD / Arrow Keys - Move<br>
+  SPACE - Jump<br>
+  TAB - Toggle Player List<br>
+  ENTER - Open Chat<br>
+  ESC - Game Settings<br><span style="color:#e0aaff;">blackboxtech.online</span>
+</div>
+
+<div id="player-list-hud">
+  <h3>Players in Server <span style="float:right;color:#c77dff;font-size:10px;letter-spacing:0.5px;">BLACK-BOX TECH</span></h3>
+  <div id="player-list-rows"></div>
+</div>
+
+<div id="chat-container">
+  <div style="font-size:10px;color:#c77dff;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-shadow:0 1px 4px #000;">BLACK-BOX TECH · LIVE CHAT · GO DIGITAL.</div>
+  <div id="chat-messages"></div>
+  <div id="chat-input-wrapper">
+    <input type="text" id="chat-input" placeholder="Press Enter to chat..." maxlength="80">
+    <button id="chat-send-btn">Send</button>
+  </div>
+</div>
+
+<div id="bbt-game-watermark">
+  <div class="bbt-wordmark">
+    <span class="bbt-mark">BB</span>
+    <span class="bbt-wordmark-text"><strong>BLACK-BOX TECH</strong><small>GO DIGITAL.</small></span>
+  </div>
+  <div style="margin-top:6px;">Discover. Design. Deliver. · Turning Ideas Into Digital Solutions</div>
+  <div><a class="bbt-link" href="https://blackboxtech.online" target="_blank" rel="noopener">blackboxtech.online</a> · <a class="bbt-link" href="mailto:info@blackboxtech.online">Contact Us</a> · <a class="bbt-link" href="https://wa.me/2348050205349" target="_blank" rel="noopener">WhatsApp</a></div>
+</div>
+
+<!-- Sign Up Overlay -->
+<div id="account-overlay" class="overlay-screen">
+  <div class="account-card">
+    <div class="bbt-signup-head">
+      <div class="bbt-wordmark">
+        <span class="bbt-mark lg">BB</span>
+        <span class="bbt-wordmark-text"><strong>BLACK-BOX TECH</strong><small>GO DIGITAL.</small></span>
+      </div>
+      <p>Technology &amp; Software Development · Idea • Innovation • Impact</p>
+    </div>
+    <h2>Join the Black-Box Baseplate</h2>
+    <form id="signup-form" onsubmit="return false;">
+      <div class="form-group">
+        <label>Birthday</label>
+        <div class="dob-group">
+          <select id="dob-month" required>
+            <option value="" disabled selected>Month</option>
+            <option>January</option><option>February</option><option>March</option>
+            <option>April</option><option>May</option><option>June</option>
+            <option>July</option><option>August</option><option>September</option>
+            <option>October</option><option>November</option><option>December</option>
+          </select>
+          <select id="dob-day" required></select>
+          <select id="dob-year" required></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="username-input" placeholder="Don't use your real name" maxlength="15" required>
+      </div>
+      <div class="form-group">
+        <label>Gender / Model Type</label>
+        <select id="gender-input" required>
+          <option value="male" selected>Male (Standard R6 Blocky)</option>
+          <option value="female">Female (3.0 Woman Mesh)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email-input" placeholder="Enter your email address" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password-input" placeholder="At least 8 characters" minlength="8" required>
+      </div>
+      <div class="form-group">
+        <label>Avatar Colors (Torso & Legs)</label>
+        <div class="color-pickers">
+          <input type="color" id="torso-color-input" value="#0D69AC" title="Torso Color">
+          <input type="color" id="legs-color-input" value="#287F46" title="Legs Color">
+        </div>
+      </div>
+      <button type="submit" class="btn-signup" id="save-account-btn">Create Account — Go Digital.</button>
+    </form>
+    <div class="bbt-signup-foot">
+      A live 3D world built by <strong style="color:#e0aaff;">Black-Box Tech</strong> · Discover. Design. Deliver.<br>
+      <a class="bbt-link" href="https://blackboxtech.online" target="_blank" rel="noopener">blackboxtech.online</a> ·
+      <a class="bbt-link" href="mailto:info@blackboxtech.online">info@blackboxtech.online</a> ·
+      <a class="bbt-link" href="https://wa.me/2348050205349" target="_blank" rel="noopener">WhatsApp +234 805 020 5349</a>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Menu -->
+<div id="games-browser-overlay" class="overlay-screen" style="display:none;">
+  <div class="bbt-navbar">
+    <div class="nav-left">
+      <a class="bbt-wordmark bbt-nav-brand" href="https://blackboxtech.online" target="_blank" rel="noopener" title="Black-Box Tech — Go Digital.">
+        <span class="bbt-mark">BB</span>
+        <span class="bbt-wordmark-text"><strong>BLACK-BOX TECH</strong><small>GO DIGITAL.</small></span>
+      </a>
+      <button class="nav-btn active" id="nav-home-btn" title="Home">🏠 Home</button>
+      <button class="nav-btn" id="nav-avatar-btn" title="Avatar Editor">👕 Avatar</button>
+      <button class="nav-btn" id="nav-about-btn" title="About Black-Box Tech">🏢 Company</button>
+      <button class="nav-btn" id="nav-inbox-btn" title="Inbox">📥 Inbox</button>
+    </div>
+    <div class="nav-center">
+      <input type="text" id="player-search-input" class="search-bar" placeholder="Search friends by name...">
+    </div>
+    <div class="nav-right">
+      <div class="currency-pill" id="currency-btn" title="BB Energy — Black-Box Tech">⚡ <span id="currency-amount">0</span></div>
+      <button class="nav-btn" id="nav-settings-btn" title="Settings">⚙️</button>
+      <button class="nav-btn" id="logout-btn" title="Log Out">🚪</button>
+      <div class="user-avatar-mini badge-avatar" id="nav-profile-btn" title="Profile View"></div>
+    </div>
+  </div>
+
+  <div class="bbt-container">
+    <!-- View 1: Home Dashboard -->
+    <div id="view-home" class="dashboard-view active-view">
+      <div class="bbt-brand-bar">
+        <div>
+          <span class="bbt-chip">BLACK-BOX TECH · GO DIGITAL.</span>
+          <h2>Idea • Innovation • Impact</h2>
+          <p>We design, develop, deploy and maintain complete digital ecosystems — web apps, mobile apps, enterprise systems, AI and automation. This baseplate is a live demo of what Black-Box Tech builds.</p>
+        </div>
+        <div class="bbt-cta-row" style="margin-top:0;">
+          <a class="bbt-cta" href="https://blackboxtech.online" target="_blank" rel="noopener">Explore Our Work →</a>
+          <a class="bbt-cta ghost" href="https://wa.me/2348050205349" target="_blank" rel="noopener">Start a Project</a>
+        </div>
+      </div>
+
+      <div class="hero-section">
+        <div class="avatar-preview-box avatar-preview-target"></div>
+        <div class="profile-info">
+          <span class="bbt-kicker">Black-Box Tech Network</span>
+          <h1>Hello, <span class="badge-username">Player</span>!</h1>
+          <p style="margin:8px 0 0;color:#a09cb0;font-size:13px;">Turning Ideas Into Digital Solutions — one world at a time.</p>
+        </div>
+      </div>
+
+      <div class="section-title">Friends</div>
+      <div class="friends-grid" id="friends-grid-container">
+        <div style="color:#6c638f; font-size:13px;" id="no-friends-text">No friends yet. Join a Black-Box Tech server and press TAB to add players!</div>
+      </div>
+
+      <div class="section-title">Experiences by Black-Box Tech</div>
+      <div class="games-grid">
+        <div class="bbt-game-card" id="select-baseplate-btn">
+          <div class="game-thumb-box" style="background: linear-gradient(135deg, #1d3557, #457b9d);">🧱</div>
+          <div class="game-card-details">
+            <div class="game-card-title">Black-Box Baseplate</div>
+            <div class="game-card-stats">👥 <span id="baseplate-online-count">0</span> online · by Black-Box Tech</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">More from Black-Box Tech</div>
+      <div class="bbt-promo-grid" id="bbt-promo-grid">
+        <div class="bbt-promo-card" data-bbt-tab="view-about">
+          <div class="ico">🏢</div><div class="ttl">About the Company</div>
+          <div class="desc">Discover. Design. Deliver. Meet the team building complete digital ecosystems.</div>
+          <div class="go">Read our story →</div>
+        </div>
+        <div class="bbt-promo-card" data-bbt-tab="view-about">
+          <div class="ico">⚙️</div><div class="ttl">Software Solutions</div>
+          <div class="desc">Custom software, web &amp; mobile apps, enterprise systems, AI and automation.</div>
+          <div class="go">See services →</div>
+        </div>
+        <div class="bbt-promo-card" data-bbt-url="https://blackboxtech.online">
+          <div class="ico">📦</div><div class="ttl">Products &amp; Portfolio</div>
+          <div class="desc">Beautcia, LNEX, school management ecosystems, cooperative platforms and more.</div>
+          <div class="go">blackboxtech.online →</div>
+        </div>
+        <div class="bbt-promo-card" data-bbt-tab="view-about">
+          <div class="ico">🎓</div><div class="ttl">Technology Training</div>
+          <div class="desc">Practical industry skills across development, design, AI, cloud and more.</div>
+          <div class="go">Explore training →</div>
+        </div>
+        <div class="bbt-promo-card" data-bbt-url="mailto:info@blackboxtech.online">
+          <div class="ico">✉️</div><div class="ttl">Start a Project</div>
+          <div class="desc">Tell us what you want to build. We take ideas from concept to production.</div>
+          <div class="go">info@blackboxtech.online →</div>
+        </div>
+        <div class="bbt-promo-card" data-bbt-url="https://wa.me/2348050205349">
+          <div class="ico">💬</div><div class="ttl">Talk to Us</div>
+          <div class="desc">Reach Black-Box Tech directly on WhatsApp: +234 805 020 5349.</div>
+          <div class="go">Open WhatsApp →</div>
+        </div>
+      </div>
+
+      <div class="bbt-footer">
+        <div><strong style="color:#e0aaff;">BLACK-BOX TECH</strong> · Technology &amp; Software Development · Ottawa, ON, Canada · Primary market: Nigeria</div>
+        <div><a class="bbt-link" href="https://blackboxtech.online" target="_blank" rel="noopener">Website</a> · <a class="bbt-link" href="mailto:info@blackboxtech.online">Email</a> · <a class="bbt-link" href="https://wa.me/2348050205349" target="_blank" rel="noopener">WhatsApp</a> · <b>GO DIGITAL.</b></div>
+      </div>
+    </div>
+
+    <!-- View 2: Avatar Customizer -->
+    <div id="view-avatar" class="dashboard-view">
+      <div class="panel-box">
+        <h2>Avatar Customizer <span style="font-size:12px;color:#a09cb0;font-weight:500;">by Black-Box Tech</span></h2>
+        <div style="display:flex; gap:30px; align-items:center; flex-wrap:wrap;">
+          <div class="avatar-preview-box avatar-preview-target"></div>
+          <div style="flex:1; min-width:240px;">
+            <div class="form-group">
+              <label>Model Style / Gender</label>
+              <select id="edit-gender-select">
+                <option value="male">Male (Classic Blocky)</option>
+                <option value="female">Female (3.0 Woman Mesh)</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Torso Color</label>
+              <input type="color" id="edit-torso-color" value="#0D69AC">
+            </div>
+            <div class="form-group">
+              <label>Legs Color</label>
+              <input type="color" id="edit-legs-color" value="#287F46">
+            </div>
+            <button class="btn-action" id="save-avatar-colors-btn">Apply Avatar Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View 3: Company / About Black-Box Tech -->
+    <div id="view-about" class="dashboard-view">
+      <div class="panel-box">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div class="bbt-wordmark">
+            <span class="bbt-mark lg">BB</span>
+            <span class="bbt-wordmark-text"><strong style="font-size:20px;">BLACK-BOX TECH</strong><small>GO DIGITAL. · DISCOVER. DESIGN. DELIVER.</small></span>
+          </div>
+          <span class="bbt-chip" style="margin-left:auto;">Technology &amp; Software Development</span>
+        </div>
+
+        <h2 style="margin:26px 0 8px;font-size:22px;">Turning Ideas Into Digital Solutions</h2>
+        <p style="margin:0;color:#b9b2cc;font-size:13px;line-height:1.75;max-width:820px;">
+          Black-Box Tech is a technology and software development company helping businesses, institutions, startups and individuals harness the power of technology. We design, develop, deploy and maintain innovative digital solutions that simplify operations, improve productivity, automate processes and create opportunities for growth. Our strength is building <strong style="color:#e0aaff;">complete digital ecosystems</strong> — a school can get a website, student management platform, offline attendance system, CBT application, inventory software and admin dashboard as one integrated solution.
+        </p>
+
+        <div class="bbt-stat-row">
+          <div class="bbt-stat"><b>6+</b><span>Years building software</span></div>
+          <div class="bbt-stat"><b>12+</b><span>Projects delivered</span></div>
+          <div class="bbt-stat"><b>2</b><span>Published mobile apps</span></div>
+          <div class="bbt-stat"><b>18+</b><span>Training programs</span></div>
+        </div>
+
+        <div class="section-title" style="margin-top:26px;">What We Do</div>
+        <div class="bbt-about-grid">
+          <div class="bbt-service-item"><h4>💻 Custom Software</h4><p>Web apps, mobile apps, SaaS platforms, APIs, backends and database architecture.</p></div>
+          <div class="bbt-service-item"><h4>🏫 Enterprise &amp; School Systems</h4><p>Management ecosystems, attendance, fees, CBT examinations, offline-first sync.</p></div>
+          <div class="bbt-service-item"><h4>🤖 AI &amp; Automation</h4><p>AI-powered applications, intelligent automation and AI-assisted business processes.</p></div>
+          <div class="bbt-service-item"><h4>🎨 UI/UX &amp; Creative</h4><p>Product design, graphics design, photo editing and video production.</p></div>
+          <div class="bbt-service-item"><h4>🎓 Technology Training</h4><p>Development, design, AI, cloud, DevOps, cybersecurity, data and game development.</p></div>
+          <div class="bbt-service-item"><h4>🛠️ Maintenance &amp; Support</h4><p>Bug fixes, upgrades, hosting, deployment, troubleshooting and technical support.</p></div>
+        </div>
+
+        <div class="section-title" style="margin-top:26px;">Selected Work</div>
+        <div class="bbt-about-grid">
+          <div class="bbt-service-item"><h4>Beautcia <span class="bbt-inbox-tag">Published</span></h4><p>Beauty-services marketplace on Google Play &amp; App Store. React Native · Expo · Next.js · NestJS.</p></div>
+          <div class="bbt-service-item"><h4>LNEX Student App <span class="bbt-inbox-tag">Deployed</span></h4><p>Digital campus platform with QR attendance, AI study assistance and push notifications.</p></div>
+          <div class="bbt-service-item"><h4>School Management Ecosystem <span class="bbt-inbox-tag">Demonstrated</span></h4><p>Admissions, staff, fees, timetables, results, CBT, parent portal and offline sync apps.</p></div>
+          <div class="bbt-service-item"><h4>LifeLink MPCS &amp; More <span class="bbt-inbox-tag">Portfolio</span></h4><p>Cooperative management, Rhema Expert Solutions, MetaShares, PayTracker, TokenVault and others.</p></div>
+        </div>
+
+        <div class="section-title" style="margin-top:26px;">Mission &amp; Vision</div>
+        <div class="bbt-about-grid">
+          <div class="bbt-service-item"><h4>Our Mission</h4><p>To empower businesses, institutions and individuals through accessible, innovative and scalable technology solutions.</p></div>
+          <div class="bbt-service-item"><h4>Our Vision</h4><p>To become a trusted technology partner known for delivering impactful digital products that transform businesses and improve lives.</p></div>
+        </div>
+
+        <div class="bbt-cta-row">
+          <a class="bbt-cta" href="https://blackboxtech.online" target="_blank" rel="noopener">Visit blackboxtech.online →</a>
+          <a class="bbt-cta ghost" href="mailto:info@blackboxtech.online">Email Us</a>
+          <a class="bbt-cta ghost" href="https://wa.me/2348050205349" target="_blank" rel="noopener">WhatsApp +234 805 020 5349</a>
+        </div>
+        <div class="bbt-footnote">BLACK-BOX TECH — GO DIGITAL. · Idea • Innovation • Impact · Ottawa, ON, Canada · Primary market: Nigeria</div>
+      </div>
+    </div>
+
+    <!-- View 4: Inbox -->
+    <div id="view-inbox" class="dashboard-view">
+      <div class="panel-box">
+        <h2>Inbox &amp; Company Updates</h2>
+        <div class="inbox-item">
+          <div>
+            <span class="bbt-inbox-tag">Welcome</span>
+            <strong>Welcome to Black-Box Tech!</strong>
+            <div style="font-size:12px; color:#a09cb0;">We build complete digital ecosystems: web apps, mobile apps, enterprise systems, AI and automation. GO DIGITAL.</div>
+          </div>
+          <span style="font-size:12px; color:#6c638f;">System</span>
+        </div>
+        <div class="inbox-item">
+          <div>
+            <span class="bbt-inbox-tag">Company</span>
+            <strong>Go Digital — Transform Your Business</strong>
+            <div style="font-size:12px; color:#a09cb0;">From business websites to enterprise management ecosystems, we take ideas from concept to production. Discover. Design. Deliver.</div>
+          </div>
+          <a class="bbt-link" style="font-size:12px;" href="https://blackboxtech.online" target="_blank" rel="noopener">Learn More →</a>
+        </div>
+        <div class="inbox-item">
+          <div>
+            <span class="bbt-inbox-tag">Products</span>
+            <strong>Beautcia, LNEX &amp; School Management Systems</strong>
+            <div style="font-size:12px; color:#a09cb0;">Published mobile apps, deployed campus platforms and offline-first school administration ecosystems.</div>
+          </div>
+          <a class="bbt-link" style="font-size:12px;" href="https://blackboxtech.online" target="_blank" rel="noopener">Portfolio →</a>
+        </div>
+        <div class="inbox-item">
+          <div>
+            <span class="bbt-inbox-tag">Training</span>
+            <strong>Build Skills With Black-Box Tech</strong>
+            <div style="font-size:12px; color:#a09cb0;">18+ technology training programs: development, UI/UX, AI, cloud, DevOps, cybersecurity and game development.</div>
+          </div>
+          <a class="bbt-link" style="font-size:12px;" href="mailto:info@blackboxtech.online">Enquire →</a>
+        </div>
+        <div class="inbox-item">
+          <div>
+            <span class="bbt-inbox-tag">Let's Talk</span>
+            <strong>Have a Project in Mind?</strong>
+            <div style="font-size:12px; color:#a09cb0;">info@blackboxtech.online · WhatsApp +234 805 020 5349 · blackboxtech.online</div>
+          </div>
+          <a class="bbt-link" style="font-size:12px;" href="https://wa.me/2348050205349" target="_blank" rel="noopener">Contact →</a>
+        </div>
+        <div class="bbt-cta-row">
+          <button class="bbt-cta" onclick="switchTab('view-about')">About Black-Box Tech →</button>
+          <a class="bbt-cta ghost" href="https://blackboxtech.online" target="_blank" rel="noopener">Visit Website</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Server Browser Screen -->
+<div id="server-browser-overlay" class="overlay-screen" style="display:none;">
+  <div class="bbt-navbar">
+    <div class="nav-left">
+      <a class="bbt-wordmark bbt-nav-brand" href="https://blackboxtech.online" target="_blank" rel="noopener" title="Black-Box Tech — Go Digital.">
+        <span class="bbt-mark">BB</span>
+        <span class="bbt-wordmark-text"><strong>BLACK-BOX TECH</strong><small>GO DIGITAL.</small></span>
+      </a>
+      <button class="nav-btn" id="back-to-games-btn">← Back to Dashboard</button>
+      <span style="font-weight:bold; font-size:16px;">Black-Box Baseplate — Servers</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn-action" id="create-server-btn">Create Server</button>
+      <button class="btn-action btn-secondary" id="refresh-btn">Refresh ↻</button>
+    </div>
+  </div>
+  <div class="bbt-container">
+    <div class="bbt-server-banner">
+      <div>
+        <span class="bbt-kicker">Powered by Black-Box Tech</span>
+        <p>Real-time multiplayer worlds — a small example of the custom software, real-time systems and cloud infrastructure we build. <strong style="color:#e0aaff;">GO DIGITAL.</strong></p>
+      </div>
+      <a class="bbt-cta ghost" href="https://blackboxtech.online" target="_blank" rel="noopener">See What We Build →</a>
+    </div>
+    <div class="server-list" id="server-grid" style="display:flex; flex-direction:column; gap:12px;"></div>
+    <div class="bbt-footer">
+      <div>BLACK-BOX TECH · Discover. Design. Deliver.</div>
+      <div><a class="bbt-link" href="mailto:info@blackboxtech.online">info@blackboxtech.online</a> · <a class="bbt-link" href="https://wa.me/2348050205349" target="_blank" rel="noopener">+234 805 020 5349</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal Overlay -->
+<div id="settings-overlay" class="overlay-screen" style="display:none;">
+  <div class="account-card">
+    <h2>Black-Box Baseplate — Settings</h2>
+    <div class="form-group">
+      <label for="graphics-quality-select">Graphics Quality</label>
+      <select id="graphics-quality-select">
+        <option value="low">Low (Fastest Performance)</option>
+        <option value="medium">Medium (Balanced)</option>
+        <option value="high" selected>High (Best Visuals)</option>
+      </select>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn-action" id="close-settings-btn" style="flex:1;">Resume</button>
+      <button class="btn-action btn-secondary" id="leave-game-btn" style="flex:1;">Leave Server</button>
+    </div>
+    <div class="bbt-settings-foot">
+      <div class="bbt-wordmark" style="justify-content:center;margin-bottom:8px;">
+        <span class="bbt-mark">BB</span>
+        <span class="bbt-wordmark-text"><strong>BLACK-BOX TECH</strong><small>GO DIGITAL.</small></span>
+      </div>
+      Turning Ideas Into Digital Solutions · Discover. Design. Deliver.<br>
+      <a class="bbt-link" href="https://blackboxtech.online" target="_blank" rel="noopener">blackboxtech.online</a> ·
+      <a class="bbt-link" href="mailto:info@blackboxtech.online">info@blackboxtech.online</a> ·
+      <a class="bbt-link" href="https://wa.me/2348050205349" target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Black-Box Tech Brand Configuration ---
+  const BBT = {
+    name: 'Black-Box Tech',
+    slogan: 'GO DIGITAL.',
+    philosophy: 'Discover. Design. Deliver.',
+    positioning: 'Turning Ideas Into Digital Solutions',
+    website: 'https://blackboxtech.online',
+    email: 'info@blackboxtech.online',
+    whatsapp: 'https://wa.me/2348050205349',
+    whatsappLabel: '+234 805 020 5349'
+  };
+  document.title = BBT.name + ' — Baseplate | ' + BBT.slogan;
+
+  // One-time migration of pre-rebrand data so existing players keep their account/friends.
+  (function migrateLegacyAccountData() {
+    const legacyPairs = [
+      ['retro_roblox_account', 'blackbox_tech_account'],
+      ['vortex_friends_list', 'blackbox_tech_friends_list']
+    ];
+    legacyPairs.forEach(pair => {
+      try {
+        if (!localStorage.getItem(pair[1]) && localStorage.getItem(pair[0])) {
+          localStorage.setItem(pair[1], localStorage.getItem(pair[0]));
+        }
+      } catch (e) {}
+    });
+  })();
+
+  // Populate DOB dropdowns
+  const daySelect = document.getElementById('dob-day');
+  for (let i = 1; i <= 31; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    daySelect.appendChild(opt);
+  }
+
+  const yearSelect = document.getElementById('dob-year');
+  for (let i = 2026; i >= 1920; i--) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    yearSelect.appendChild(opt);
+  }
+
+  // --- Headshot & Avatar Generators ---
+  function generateAvatarHeadshotUrl(torsoHex = '#0D69AC', gender = 'male') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#251e3e'; ctx.fillRect(0, 0, 64, 64);
+    
+    if (gender === 'female') {
+      ctx.fillStyle = torsoHex;
+      ctx.beginPath();
+      ctx.moveTo(18, 64); ctx.lineTo(24, 44); ctx.lineTo(40, 44); ctx.lineTo(46, 64); ctx.fill();
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(18, 16, 28, 28);
+      // Hair tuft
+      ctx.beginPath(); ctx.moveTo(18, 16); ctx.lineTo(12, 4); ctx.lineTo(26, 12); ctx.fill();
+      ctx.fillStyle = '#111111'; ctx.font = '10px sans-serif'; ctx.fillText('3_3', 24, 32);
+      ctx.fillStyle = '#000'; ctx.fillRect(14, 20, 5, 5); ctx.fillRect(44, 20, 5, 5);
+    } else {
+      ctx.fillStyle = torsoHex; ctx.fillRect(16, 44, 32, 20);
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(18, 16, 28, 28);
+      ctx.fillStyle = '#E5BD1F'; ctx.fillRect(26, 12, 12, 4);
+      ctx.fillStyle = '#111111'; ctx.fillRect(24, 26, 4, 6); ctx.fillRect(36, 26, 4, 6);
+      ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = '#111111';
+      ctx.arc(32, 34, 6, 0.1 * Math.PI, 0.9 * Math.PI, false); ctx.stroke();
+    }
+    return canvas.toDataURL();
+  }
+
+  function generateFullAvatarUrl(torsoHex = '#0D69AC', legsHex = '#287F46', gender = 'male') {
+    const canvas = document.createElement('canvas');
+    canvas.width = 120; canvas.height = 160;
+    const ctx = canvas.getContext('2d');
+    
+    if (gender === 'female') {
+      // Head & Hair
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(45, 15, 30, 30);
+      ctx.beginPath(); ctx.moveTo(45, 15); ctx.lineTo(35, 2); ctx.lineTo(55, 10); ctx.fill();
+      ctx.fillStyle = '#111111'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(':3', 53, 34);
+      // Torso (narrow waist)
+      ctx.fillStyle = torsoHex;
+      ctx.beginPath(); ctx.moveTo(35, 48); ctx.lineTo(43, 72); ctx.lineTo(32, 98); ctx.lineTo(88, 98); ctx.lineTo(77, 72); ctx.lineTo(85, 48); ctx.fill();
+      // Trans flag badge
+      ctx.fillStyle = '#5BCEFA'; ctx.fillRect(72, 54, 10, 2); ctx.fillRect(72, 58, 10, 2);
+      ctx.fillStyle = '#F5A9B8'; ctx.fillRect(72, 55, 10, 1); ctx.fillRect(72, 57, 10, 1);
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(72, 56, 10, 1);
+      // Arms (Black wrist bands)
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(18, 48, 15, 30); ctx.fillRect(87, 48, 15, 30);
+      ctx.fillStyle = '#111111'; ctx.fillRect(18, 78, 15, 18); ctx.fillRect(87, 78, 15, 18);
+      // Legs (Green with black thigh-high boots)
+      ctx.fillStyle = legsHex; ctx.fillRect(35, 98, 23, 20); ctx.fillRect(62, 98, 23, 20);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(35, 118, 23, 2); ctx.fillRect(62, 118, 23, 2);
+      ctx.fillStyle = '#111111'; ctx.fillRect(35, 120, 23, 28); ctx.fillRect(62, 120, 23, 28);
+    } else {
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(45, 15, 30, 30);
+      ctx.fillStyle = '#E5BD1F'; ctx.fillRect(53, 10, 14, 5);
+      ctx.fillStyle = '#111111'; ctx.fillRect(52, 26, 4, 7); ctx.fillRect(64, 26, 4, 7);
+      ctx.beginPath(); ctx.lineWidth = 2; ctx.strokeStyle = '#111111';
+      ctx.arc(60, 36, 6, 0.1 * Math.PI, 0.9 * Math.PI, false); ctx.stroke();
+      ctx.fillStyle = torsoHex; ctx.fillRect(35, 48, 50, 48);
+      ctx.fillStyle = '#F5CD2F'; ctx.fillRect(18, 48, 15, 48); ctx.fillRect(87, 48, 15, 48);
+      ctx.fillStyle = legsHex; ctx.fillRect(35, 98, 23, 50); ctx.fillRect(62, 98, 23, 50);
+    }
+    return canvas.toDataURL();
+  }
+
+  // --- Real Friends & Account Persistence ---
+  let currentUser = null;
+  let friendsList = [];
+
+  function loadAccount() {
+    const saved = localStorage.getItem('blackbox_tech_account');
+    if (saved) {
+      try { currentUser = JSON.parse(saved); } catch(e) {}
+    }
+    const savedFriends = localStorage.getItem('blackbox_tech_friends_list');
+    if (savedFriends) {
+      try { friendsList = JSON.parse(savedFriends); } catch(e) {}
+    }
+
+    if (currentUser && currentUser.username) {
+      document.getElementById('account-overlay').style.display = 'none';
+      document.getElementById('games-browser-overlay').style.display = 'flex';
+      updateUserBadge();
+      renderFriendsList();
+    } else {
+      document.getElementById('account-overlay').style.display = 'flex';
+      document.getElementById('games-browser-overlay').style.display = 'none';
+    }
+  }
+
+  function updateUserBadge() {
+    if (!currentUser) return;
+    const gender = currentUser.gender || 'male';
+    const headshotUrl = generateAvatarHeadshotUrl(currentUser.torsoColor, gender);
+    const fullAvatarUrl = generateFullAvatarUrl(currentUser.torsoColor, currentUser.legsColor, gender);
+
+    document.querySelectorAll('.badge-username').forEach(el => el.textContent = currentUser.username);
+    document.querySelectorAll('.badge-avatar').forEach(el => {
+      el.innerHTML = `<img src="${headshotUrl}" alt="Avatar">`;
+    });
+
+    document.querySelectorAll('.avatar-preview-target').forEach(box => {
+      box.innerHTML = `<img src="${fullAvatarUrl}" alt="Full Avatar">`;
+    });
+
+    document.getElementById('edit-gender-select').value = gender;
+    document.getElementById('edit-torso-color').value = currentUser.torsoColor;
+    document.getElementById('edit-legs-color').value = currentUser.legsColor;
+  }
+
+  function renderFriendsList(filterQuery = '') {
+    const container = document.getElementById('friends-grid-container');
+    container.innerHTML = '';
+
+    const filtered = friendsList.filter(f => f && typeof f.username === 'string' && f.username.toLowerCase().includes(filterQuery.toLowerCase()));
+
+    if (friendsList.length === 0) {
+      container.innerHTML = '<div style="color:#6c638f; font-size:13px;">No friends yet. Join a Black-Box Tech server and press TAB to add players!</div>';
+      return;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div style="color:#6c638f; font-size:13px;">No friends found matching "${escapeHtml(filterQuery)}"</div>`;
+      return;
+    }
+
+    filtered.forEach(friend => {
+      const card = document.createElement('div');
+      card.className = 'friend-card';
+      const headshot = generateAvatarHeadshotUrl(friend.torsoColor || '#0D69AC', friend.gender || 'male');
+      card.innerHTML = `
+        <div class="friend-avatar"><img src="${headshot}"></div>
+        <div class="friend-name">${escapeHtml(friend.username)}</div>
+        <div class="friend-status">Offline</div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function addFriend(username, torsoColor, gender = 'male') {
+    if (!friendsList.some(f => f.username === username)) {
+      friendsList.push({ username, torsoColor, gender });
+      localStorage.setItem('blackbox_tech_friends_list', JSON.stringify(friendsList));
+      renderFriendsList();
+    }
+  }
+
+  // Live Player Search Bar functionality
+  document.getElementById('player-search-input').addEventListener('input', (e) => {
+    switchTab('view-home');
+    renderFriendsList(e.target.value.trim());
+  });
+
+  // --- Navbar & Tab Navigation Logic ---
+  function switchTab(viewId) {
+    document.querySelectorAll('.dashboard-view').forEach(view => view.classList.remove('active-view'));
+    document.querySelectorAll('.nav-left .nav-btn').forEach(btn => btn.classList.remove('active'));
+
+    const targetView = document.getElementById(viewId);
+    if (targetView) targetView.classList.add('active-view');
+
+    if (viewId === 'view-home') document.getElementById('nav-home-btn').classList.add('active');
+    if (viewId === 'view-avatar') document.getElementById('nav-avatar-btn').classList.add('active');
+    if (viewId === 'view-about') document.getElementById('nav-about-btn').classList.add('active');
+    if (viewId === 'view-inbox') document.getElementById('nav-inbox-btn').classList.add('active');
+  }
+
+  document.getElementById('nav-home-btn').addEventListener('click', () => switchTab('view-home'));
+  document.getElementById('nav-avatar-btn').addEventListener('click', () => switchTab('view-avatar'));
+  document.getElementById('nav-about-btn').addEventListener('click', () => switchTab('view-about'));
+  document.getElementById('nav-inbox-btn').addEventListener('click', () => switchTab('view-inbox'));
+  document.getElementById('nav-profile-btn').addEventListener('click', () => switchTab('view-home'));
+  document.getElementById('nav-settings-btn').addEventListener('click', () => toggleSettingsMenu());
+
+  // Company promo cards: open an internal view or an official Black-Box Tech channel.
+  document.querySelectorAll('#bbt-promo-grid .bbt-promo-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const tab = card.getAttribute('data-bbt-tab');
+      const url = card.getAttribute('data-bbt-url');
+      if (tab) switchTab(tab);
+      else if (url) window.open(url, '_blank', 'noopener');
+    });
+  });
+
+  document.getElementById('currency-btn').addEventListener('click', () => {
+    const inGame = document.getElementById('hud-instructions').style.display === 'block';
+    if (inGame) {
+      alert(`${BBT.name} — BB Energy is coming soon.\n${BBT.positioning}.\n${BBT.website} · ${BBT.email}`);
+    } else {
+      switchTab('view-about');
+    }
+  });
+
+  // Avatar Customization update
+  document.getElementById('save-avatar-colors-btn').addEventListener('click', () => {
+    if (!currentUser) return;
+    currentUser.gender = document.getElementById('edit-gender-select').value;
+    currentUser.torsoColor = document.getElementById('edit-torso-color').value;
+    currentUser.legsColor = document.getElementById('edit-legs-color').value;
+    localStorage.setItem('blackbox_tech_account', JSON.stringify(currentUser));
+
+    if (localAvatar) rebuildLocalPlayerAvatar();
+    updateUserBadge();
+    alert("Avatar updated. Looking sharp. — Black-Box Tech");
+  });
+
+  document.getElementById('signup-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username-input').value.trim();
+    const email = document.getElementById('email-input').value.trim();
+    const password = document.getElementById('password-input').value;
+    const gender = document.getElementById('gender-input').value;
+
+    if (!username || !email || !password) return alert("Please fill in all fields to join Black-Box Tech!");
+
+    currentUser = {
+      username: username,
+      email: email,
+      gender: gender,
+      torsoColor: document.getElementById('torso-color-input').value,
+      legsColor: document.getElementById('legs-color-input').value
+    };
+
+    localStorage.setItem('blackbox_tech_account', JSON.stringify(currentUser));
+    updateUserBadge();
+    renderFriendsList();
+    
+    document.getElementById('account-overlay').style.display = 'none';
+    document.getElementById('games-browser-overlay').style.display = 'flex';
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    if (confirm("Leave your Black-Box Tech account?")) {
+      localStorage.removeItem('blackbox_tech_account');
+      currentUser = null;
+      document.getElementById('games-browser-overlay').style.display = 'none';
+      document.getElementById('account-overlay').style.display = 'flex';
+    }
+  });
+
+  document.getElementById('select-baseplate-btn').addEventListener('click', () => {
+    document.getElementById('games-browser-overlay').style.display = 'none';
+    document.getElementById('server-browser-overlay').style.display = 'flex';
+  });
+
+  document.getElementById('back-to-games-btn').addEventListener('click', () => {
+    document.getElementById('server-browser-overlay').style.display = 'none';
+    document.getElementById('games-browser-overlay').style.display = 'flex';
+  });
+
+  document.getElementById('refresh-btn').addEventListener('click', () => {
+    renderServerBrowser();
+  });
+
+  // --- Networking ---
+  const MQTT_TOPIC = "blackbox_tech_baseplate_servers_2026";
+  const mqttClient = mqtt.connect('wss://test.mosquitto.org:8081');
+  const localChannel = new BroadcastChannel('blackbox_tech_local_bus');
+
+  let myPeerId = "bbt_user_" + Math.random().toString(36).substr(2, 9);
+  let peer = new Peer(myPeerId, {
+    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] }
+  });
+
+  let isHost = false;
+  let connections = {};
+  let remotePlayers = {};
+  let discoveredServers = {};
+  let currentTargetHostId = null;
+
+  peer.on('open', (id) => {
+    myPeerId = id;
+    if (mqttClient.connected) mqttClient.publish(MQTT_TOPIC, JSON.stringify({ type: 'PING_REQUEST', requester: myPeerId }));
+  });
+
+  localChannel.onmessage = (event) => {
+    const data = event.data;
+    if (data.type === 'RELAY_GAME_DATA') {
+      if (data.senderPeerId !== myPeerId) handleIncomingPlayerData(data.senderPeerId, data.payload);
+    } else if (data.type === 'CHAT_MSG') {
+      addChatMessage(data.sender, data.text, data.senderPeerId);
+    } else if (data.type === 'HOST_PING') {
+      if (data.hostId !== myPeerId) {
+        discoveredServers[data.hostId] = { ...data, lastSeen: Date.now() };
+        renderServerBrowser();
+      }
+    }
+  };
+
+  mqttClient.on('connect', () => {
+    mqttClient.subscribe(MQTT_TOPIC);
+    mqttClient.publish(MQTT_TOPIC, JSON.stringify({ type: 'PING_REQUEST', requester: myPeerId }));
+  });
+
+  mqttClient.on('message', (topic, message) => {
+    try {
+      const data = JSON.parse(message.toString());
+      if (data.type === 'PING_REQUEST' && isHost) return broadcastHostData();
+      if (data.hostId && data.hostId !== myPeerId) {
+        discoveredServers[data.hostId] = {
+          hostId: data.hostId,
+          hostName: data.hostName || "Black-Box Tech Server",
+          players: data.players || 1,
+          maxPlayers: data.maxPlayers || 25,
+          lastSeen: Date.now()
+        };
+        renderServerBrowser();
+      }
+    } catch(e) {}
+  });
+
+  function broadcastHostData() {
+    if (!isHost || !currentUser) return;
+    const playerCount = Object.keys(connections).length + 1;
+    const payload = {
+      type: 'HOST_PING',
+      hostId: myPeerId,
+      hostName: `Black-Box Tech | ${currentUser.username}'s Server`,
+      players: playerCount,
+      maxPlayers: 25
+    };
+    discoveredServers[myPeerId] = { ...payload, lastSeen: Date.now() };
+    localChannel.postMessage(payload);
+    if (mqttClient.connected) mqttClient.publish(MQTT_TOPIC, JSON.stringify(payload));
+    renderServerBrowser();
+  }
+
+  setInterval(broadcastHostData, 2000);
+
+  function relayToAllClients(senderId, payload) {
+    Object.keys(connections).forEach(peerId => {
+      if (peerId !== senderId && connections[peerId].open && !connections[peerId].isLocalChannel) {
+        connections[peerId].send({ type: 'RELAY_GAME_DATA', senderPeerId: senderId, payload: payload });
+      }
+    });
+
+    localChannel.postMessage({
+      type: 'RELAY_GAME_DATA',
+      senderPeerId: senderId,
+      payload: payload
+    });
+  }
+
+  peer.on('connection', (conn) => setupConnection(conn));
+
+  function setupConnection(conn) {
+    conn.on('open', () => {
+      connections[conn.peer] = conn;
+      createRemotePlayerIfNeeded(conn.peer);
+    });
+
+    conn.on('data', (data) => {
+      if (data.type === 'CHAT_MSG') {
+        addChatMessage(data.sender, data.text, conn.peer);
+      } else if (data.type === 'RELAY_GAME_DATA') {
+        handleIncomingPlayerData(data.senderPeerId, data.payload);
+      } else {
+        handleIncomingPlayerData(conn.peer, data);
+        if (isHost) relayToAllClients(conn.peer, data);
+      }
+    });
+
+    conn.on('close', () => removeRemotePlayer(conn.peer));
+  }
+
+  function removeRemotePlayer(peerId) {
+    if (remotePlayers[peerId]) {
+      scene.remove(remotePlayers[peerId].group);
+      delete remotePlayers[peerId];
+    }
+    delete connections[peerId];
+    updatePlayerListHud();
+  }
+
+  // --- UI Server Browser ---
+  const serverGrid = document.getElementById('server-grid');
+
+  function renderServerBrowser() {
+    serverGrid.innerHTML = '';
+    const serverList = Object.values(discoveredServers);
+
+    let totalOnline = 0;
+    serverList.forEach(s => totalOnline += s.players);
+    document.getElementById('baseplate-online-count').textContent = totalOnline;
+
+    if (serverList.length === 0) {
+      serverGrid.innerHTML = '<div style="color:#6c638f; padding:20px 0;">No active Black-Box Tech servers yet. Be the first — click "Create Server" to launch one!</div>';
+      return;
+    }
+
+    serverList.forEach((server) => {
+      const card = document.createElement('div');
+      card.style.background = '#161324';
+      card.style.border = '1px solid #231d36';
+      card.style.borderRadius = '10px';
+      card.style.padding = '16px';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.justifyContent = 'space-between';
+
+      const isMyOwnServer = server.hostId === myPeerId;
+      card.innerHTML = `
+        <div>
+          <div style="font-weight:bold; font-size:15px; color:#fff;">${escapeHtml(server.hostName)}</div>
+          <div style="font-size:12px; color:#6c638f; margin-top:4px;">👥 ${server.players} / ${server.maxPlayers} Players · <span style="color:#c77dff;">Powered by Black-Box Tech</span></div>
+        </div>
+        <button class="btn-action" onclick="joinServer('${escapeJs(server.hostId)}')">${isMyOwnServer ? 'Re-enter' : 'Join'}</button>
+      `;
+      serverGrid.appendChild(card);
+    });
+  }
+
+  document.getElementById('create-server-btn').addEventListener('click', () => {
+    isHost = true;
+    broadcastHostData();
+    initGameEngine();
+    startGameUI();
+  });
+
+  window.joinServer = function(hostId) {
+    initGameEngine();
+    if (hostId !== myPeerId) {
+      currentTargetHostId = hostId;
+      connections[hostId] = { isLocalChannel: true, open: true };
+      createRemotePlayerIfNeeded(hostId);
+
+      try {
+        const conn = peer.connect(hostId, { reliable: true });
+        setupConnection(conn);
+      } catch(e) {}
+    }
+    startGameUI();
+  };
+
+  // --- Black-Box Tech In-Game Brand Messages ---
+  const BBT_PROMOS = [
+    'Custom software, web & mobile apps, enterprise systems and AI. Go Digital — blackboxtech.online',
+    'Discover. Design. Deliver. — Turning Ideas Into Digital Solutions.',
+    'Beautcia, LNEX and our school management ecosystem were built by Black-Box Tech. info@blackboxtech.online',
+    '18+ technology training programs: web, mobile, AI, cloud, DevOps, design and game development.',
+    'Idea • Innovation • Impact — reach us on WhatsApp +234 805 020 5349.'
+  ];
+  let bbtPromoIndex = 0;
+  let bbtPromoTimer = null;
+
+  function addBrandMessage(text) {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-msg bbt-chat-sys';
+    msgEl.innerHTML = `<span class="sender">BLACK-BOX TECH:</span>${escapeHtml(text)}`;
+    chatMessages.appendChild(msgEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    while (chatMessages.children.length > 40) chatMessages.removeChild(chatMessages.firstChild);
+  }
+
+  function startGameUI() {
+    document.getElementById('server-browser-overlay').style.display = 'none';
+    document.getElementById('games-browser-overlay').style.display = 'none';
+    document.getElementById('hud-instructions').style.display = 'block';
+    document.getElementById('chat-container').style.display = 'flex';
+    document.getElementById('player-list-hud').style.display = 'flex';
+    document.getElementById('bbt-game-watermark').style.display = 'block';
+    updatePlayerListHud();
+
+    if (!bbtPromoTimer) {
+      addBrandMessage(`Welcome to the Black-Box Baseplate — a live 3D world built by ${BBT.name}. ${BBT.slogan} ${BBT.philosophy} ${BBT.website}`);
+      bbtPromoTimer = setInterval(() => {
+        addBrandMessage(BBT_PROMOS[bbtPromoIndex % BBT_PROMOS.length]);
+        bbtPromoIndex++;
+      }, 120000);
+    }
+  }
+
+  // --- Real Player List HUD ---
+  function updatePlayerListHud() {
+    const listContainer = document.getElementById('player-list-rows');
+    listContainer.innerHTML = '';
+
+    // Add local user
+    if (currentUser) {
+      const selfRow = document.createElement('div');
+      selfRow.className = 'player-row';
+      selfRow.innerHTML = `<div class="player-row-info"><span>👤</span><span>${escapeHtml(currentUser.username)} (You)</span></div>`;
+      listContainer.appendChild(selfRow);
+    }
+
+    // Add connected real players
+    Object.keys(remotePlayers).forEach(peerId => {
+      const rp = remotePlayers[peerId];
+      if (!rp.username) return;
+
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      const isAlreadyFriend = friendsList.some(f => f.username === rp.username);
+
+      row.innerHTML = `
+        <div class="player-row-info">
+          <span>👤</span>
+          <span>${escapeHtml(rp.username)}</span>
+        </div>
+        <button class="btn-add-friend ${isAlreadyFriend ? 'added' : ''}" onclick="handleAddFriendClick('${escapeJs(rp.username)}', '${escapeJs(rp.torsoHex)}', '${escapeJs(rp.gender || 'male')}', this)">
+          ${isAlreadyFriend ? 'Friend' : '+ Add'}
+        </button>
+      `;
+      listContainer.appendChild(row);
+    });
+  }
+
+  window.handleAddFriendClick = function(username, torsoHex, gender, btn) {
+    if (btn.classList.contains('added')) return;
+    addFriend(username, torsoHex, gender);
+    btn.textContent = 'Friend';
+    btn.classList.add('added');
+  };
+
+  // --- Chat Logic ---
+  const chatInput = document.getElementById('chat-input');
+  const chatSendBtn = document.getElementById('chat-send-btn');
+  const chatMessages = document.getElementById('chat-messages');
+
+  function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text || !currentUser) return;
+
+    addChatMessage(currentUser.username, text, myPeerId);
+
+    const payload = { type: 'CHAT_MSG', sender: currentUser.username, text: text, senderPeerId: myPeerId };
+    localChannel.postMessage(payload);
+
+    Object.values(connections).forEach(conn => {
+      if (conn.open && !conn.isLocalChannel) conn.send(payload);
+    });
+
+    chatInput.value = '';
+    chatInput.blur();
+  }
+
+  function addChatMessage(sender, text, senderPeerId) {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'chat-msg';
+    msgEl.innerHTML = `<span class="sender">${escapeHtml(sender)}:</span>${escapeHtml(text)}`;
+    chatMessages.appendChild(msgEl);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    if (senderPeerId === myPeerId && localAvatar) {
+      showChatBubble(localAvatar, text);
+    } else if (remotePlayers[senderPeerId]) {
+      showChatBubble(remotePlayers[senderPeerId], text);
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function escapeJs(str) {
+    return String(str == null ? '' : str)
+      .replace(/\\/g, "\\\\").replace(/'/g, "\\'")
+      .replace(/"/g, '\\"').replace(/</g, "\\x3C");
+  }
+
+  chatSendBtn.addEventListener('click', sendChatMessage);
+  chatInput.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') sendChatMessage();
+  });
+
+  // --- Settings Menu & Key Handling ---
+  const settingsOverlay = document.getElementById('settings-overlay');
+  const closeSettingsBtn = document.getElementById('close-settings-btn');
+  const leaveGameBtn = document.getElementById('leave-game-btn');
+  let isSettingsOpen = false;
+
+  function toggleSettingsMenu() {
+    isSettingsOpen = !isSettingsOpen;
+    settingsOverlay.style.display = isSettingsOpen ? 'flex' : 'none';
+  }
+
+  closeSettingsBtn.addEventListener('click', toggleSettingsMenu);
+  leaveGameBtn.addEventListener('click', () => location.reload());
+
+  // --- Three.js Engine ---
+  let isGameInitialized = false;
+  let scene, camera, renderer, controls, sunLight;
+  let localAvatar, player;
+  const groundY = 0.4;
+
+  // --- Black-Box Tech In-World Advertising ---
+  function createBrandBoardTexture(opts) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024; canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, 1024, 512);
+    grad.addColorStop(0, '#120e20');
+    grad.addColorStop(0.55, '#241546');
+    grad.addColorStop(1, '#0d0b14');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1024, 512);
+    ctx.strokeStyle = '#7b2cbf'; ctx.lineWidth = 12; ctx.strokeRect(16, 16, 992, 480);
+
+    ctx.fillStyle = '#7b2cbf'; ctx.fillRect(48, 64, 118, 118);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 64px Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('BB', 107, 124, 110);
+
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#e0aaff'; ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillText(opts.kicker, 196, 108, 780);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 68px Arial, sans-serif';
+    ctx.fillText(opts.title, 48, 250, 928);
+    ctx.fillStyle = '#c9c0dd'; ctx.font = '34px Arial, sans-serif';
+    ctx.fillText(opts.line1, 48, 326, 928);
+    ctx.fillText(opts.line2, 48, 376, 928);
+    ctx.fillStyle = '#e0aaff'; ctx.font = 'bold 30px Arial, sans-serif';
+    ctx.fillText('GO DIGITAL.  ·  blackboxtech.online  ·  info@blackboxtech.online', 48, 452, 928);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  function addBrandWorld() {
+    const boards = [
+      { x: 0,   z: -20, w: 20, h: 10, kicker: 'TECHNOLOGY & SOFTWARE DEVELOPMENT', title: 'BLACK-BOX TECH',
+        line1: 'Discover. Design. Deliver.', line2: 'Turning Ideas Into Digital Solutions' },
+      { x: -32, z: -32, w: 16, h: 8, kicker: 'CORE SERVICES', title: 'SOFTWARE DEVELOPMENT',
+        line1: 'Web apps · Mobile apps · SaaS platforms', line2: 'APIs · Backends · Database architecture' },
+      { x: 32,  z: -32, w: 16, h: 8, kicker: 'ENTERPRISE SOLUTIONS', title: 'GO DIGITAL.',
+        line1: 'School & business management systems', line2: 'Automation · Analytics · AI integration' },
+      { x: -32, z: 32,  w: 16, h: 8, kicker: 'PRODUCTS & PORTFOLIO', title: 'BUILT & SHIPPED',
+        line1: 'Beautcia · LNEX · School Management', line2: 'Concept to production, end to end' },
+      { x: 32,  z: 32,  w: 16, h: 8, kicker: "LET'S BUILD SOMETHING", title: 'START A PROJECT',
+        line1: BBT.email, line2: 'WhatsApp ' + BBT.whatsappLabel }
+    ];
+
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x1b1430, roughness: 0.85 });
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x2a2442, roughness: 0.9 });
+
+    boards.forEach(b => {
+      const group = new THREE.Group();
+      group.position.set(b.x, 0, b.z);
+      group.lookAt(0, 0, 0);
+
+      const boardY = b.h / 2 + 3;
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.6, b.h + 0.6, 0.3), frameMat);
+      frame.position.set(0, boardY, -0.18);
+      group.add(frame);
+
+      const panel = new THREE.Mesh(
+        new THREE.PlaneGeometry(b.w, b.h),
+        new THREE.MeshBasicMaterial({ map: createBrandBoardTexture(b), side: THREE.DoubleSide, fog: false })
+      );
+      panel.position.set(0, boardY, 0.02);
+      group.add(panel);
+
+      [-1, 1].forEach(side => {
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3.3, 0.5), postMat);
+        post.position.set(side * (b.w / 2 - 1), 1.65, -0.18);
+        group.add(post);
+      });
+
+      scene.add(group);
+    });
+
+    // Branded ground decal near spawn
+    const decalCanvas = document.createElement('canvas');
+    decalCanvas.width = 512; decalCanvas.height = 512;
+    const dc = decalCanvas.getContext('2d');
+    dc.textAlign = 'center'; dc.textBaseline = 'middle';
+    dc.fillStyle = 'rgba(224,170,255,0.55)';
+    dc.font = 'bold 76px Arial, sans-serif';
+    dc.fillText('BLACK-BOX TECH', 256, 220, 480);
+    dc.fillStyle = 'rgba(255,255,255,0.42)';
+    dc.font = 'bold 52px Arial, sans-serif';
+    dc.fillText('GO DIGITAL.', 256, 310, 400);
+    const decal = new THREE.Mesh(
+      new THREE.PlaneGeometry(22, 22),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(decalCanvas), transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false })
+    );
+    decal.rotation.x = -Math.PI / 2;
+    decal.position.set(0, 0.04, 7);
+    scene.add(decal);
+  }
+
+  function initGameEngine() {
+    if (isGameInitialized) return;
+    isGameInitialized = true;
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x80BFFF);
+    scene.fog = new THREE.Fog(0x80BFFF, 40, 120);
+
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
+    controls.maxPolarAngle = Math.PI / 2 - 0.01;
+
+    scene.add(new THREE.AmbientLight(0xfffaed, 0.55));
+    sunLight = new THREE.DirectionalLight(0xffffd0, 1.0);
+    sunLight.position.set(30, 50, 20);
+    scene.add(sunLight);
+
+    const baseplateSize = 100;
+    const baseplateTexture = createStudTexture('#2e8b57', '#3cb371');
+    baseplateTexture.repeat.set(baseplateSize, baseplateSize);
+    const baseplate = new THREE.Mesh(
+      new THREE.BoxGeometry(baseplateSize, 2, baseplateSize),
+      new THREE.MeshStandardMaterial({ map: baseplateTexture, roughness: 0.8 })
+    );
+    baseplate.position.y = -1;
+    scene.add(baseplate);
+
+    addBrandWorld();
+    rebuildLocalPlayerAvatar();
+    camera.position.set(0, 8, 16);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+  }
+
+  function rebuildLocalPlayerAvatar() {
+    if (player) scene.remove(player);
+    localAvatar = buildAvatarMesh(currentUser.torsoColor, currentUser.legsColor, currentUser.gender || 'male');
+    player = localAvatar.group;
+    player.position.set(0, groundY, 0);
+    scene.add(player);
+  }
+
+  function createStudTexture(baseColorHex, studColorHex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = baseColorHex; ctx.fillRect(0, 0, 128, 128);
+    ctx.strokeStyle = '#000000'; ctx.globalAlpha = 0.15; ctx.lineWidth = 4;
+    ctx.strokeRect(0, 0, 128, 128);
+    ctx.globalAlpha = 1.0; ctx.fillStyle = studColorHex;
+    ctx.fillRect(32, 32, 64, 64);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+  }
+
+  function createRoundedBox(w, h, d, radius, smoothness) {
+    const shape = new THREE.Shape();
+    const x = w / 2 - radius, y = h / 2 - radius;
+    shape.absarc(-x, -y, radius, Math.PI, Math.PI * 1.5);
+    shape.absarc(x, -y, radius, Math.PI * 1.5, 0);
+    shape.absarc(x, y, radius, 0, Math.PI * 0.5);
+    shape.absarc(-x, y, radius, Math.PI * 0.5, Math.PI);
+    return new THREE.ExtrudeGeometry(shape, { depth: d - radius * 2, bevelEnabled: true, bevelSegments: smoothness, steps: 1, bevelSize: radius, bevelThickness: radius, curveSegments: smoothness }).center();
+  }
+
+  function createWomanTorsoGeometry() {
+    const shape = new THREE.Shape();
+    shape.moveTo(-0.9, 1.0);
+    shape.lineTo(-0.6, 0.0);
+    shape.lineTo(-0.85, -1.0);
+    shape.lineTo(0.85, -1.0);
+    shape.lineTo(0.6, 0.0);
+    shape.lineTo(0.9, 1.0);
+    shape.closePath();
+
+    return new THREE.ExtrudeGeometry(shape, { depth: 0.8, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.06, bevelThickness: 0.06 }).center();
+  }
+
+  function createFaceTexture(isFemale = false) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#F5CD2F'; ctx.fillRect(0, 0, 256, 256);
+
+    if (isFemale) {
+      ctx.fillStyle = '#111111';
+      ctx.font = 'bold 70px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('3_3', 128, 140);
+      ctx.fillStyle = '#111111';
+      ctx.font = '36px sans-serif';
+      ctx.fillText('🖤', 100, 70); ctx.fillText('🖤', 145, 95);
+    } else {
+      ctx.fillStyle = '#111111'; ctx.fillRect(80, 100, 20, 30); ctx.fillRect(156, 100, 20, 30);
+      ctx.beginPath(); ctx.lineWidth = 10; ctx.strokeStyle = '#111111';
+      ctx.arc(128, 150, 30, 0.1 * Math.PI, 0.9 * Math.PI, false); ctx.stroke();
+    }
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  function createBadgeTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 40;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#5BCEFA'; ctx.fillRect(0, 0, 64, 8); ctx.fillRect(0, 32, 64, 8);
+    ctx.fillStyle = '#F5A9B8'; ctx.fillRect(0, 8, 64, 8); ctx.fillRect(0, 24, 64, 8);
+    ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 16, 64, 8);
+    return new THREE.CanvasTexture(canvas);
+  }
+
+  function buildAvatarMesh(torsoHex = '#0D69AC', legsHex = '#287F46', gender = 'male') {
+    const group = new THREE.Group();
+    const isFemale = (gender === 'female');
+
+    const headTexture = createFaceTexture(isFemale);
+    const faceMaterial = new THREE.MeshStandardMaterial({ map: headTexture });
+    const headMaterial = new THREE.MeshStandardMaterial({ color: 0xF5CD2F });
+    const torsoMaterial = new THREE.MeshStandardMaterial({ color: torsoHex });
+    const legsMaterial = new THREE.MeshStandardMaterial({ color: legsHex });
+
+    // Head
+    const headMaterials = [
+      headMaterial, headMaterial, headMaterial, headMaterial,
+      faceMaterial, headMaterial
+    ];
+    const head = new THREE.Mesh(createRoundedBox(1.2, 1.2, 1.2, 0.18, 4), headMaterials);
+    head.position.set(0, 4.8, 0); group.add(head);
+
+    // Blonde Hair Mesh for Female
+    if (isFemale) {
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0xF5CD2F });
+      const tuftGeom = new THREE.ConeGeometry(0.35, 1.1, 4);
+      const tuft1 = new THREE.Mesh(tuftGeom, hairMat);
+      tuft1.position.set(-0.3, 5.7, 0.1); tuft1.rotation.z = 0.4;
+      const tuft2 = new THREE.Mesh(tuftGeom, hairMat);
+      tuft2.position.set(0.1, 5.8, -0.1); tuft2.rotation.z = 0.1;
+      group.add(tuft1, tuft2);
+    }
+
+    // Torso (Woman Mesh vs Standard Blocky)
+    let torso;
+    if (isFemale) {
+      torso = new THREE.Mesh(createWomanTorsoGeometry(), torsoMaterial);
+      const badgeGeo = new THREE.PlaneGeometry(0.35, 0.22);
+      const badgeMat = new THREE.MeshBasicMaterial({ map: createBadgeTexture() });
+      const badge = new THREE.Mesh(badgeGeo, badgeMat);
+      badge.position.set(0.4, 0.3, 0.45);
+      torso.add(badge);
+    } else {
+      torso = new THREE.Mesh(createRoundedBox(2, 2, 1, 0.12, 4), torsoMaterial);
+    }
+    torso.position.set(0, 3.1, 0); group.add(torso);
+
+    function createPivot(x, y, baseMat, bootColor = null, armSleeve = false) {
+      const pivot = new THREE.Group();
+      pivot.position.set(x, y, 0);
+      const mesh = new THREE.Mesh(createRoundedBox(1, 2, 1, 0.12, 4), baseMat);
+      mesh.position.set(0, -1, 0); pivot.add(mesh);
+
+      if (armSleeve) {
+        const sleeve = new THREE.Mesh(createRoundedBox(1.04, 0.8, 1.04, 0.05, 2), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+        sleeve.position.set(0, -1.5, 0); pivot.add(sleeve);
+      }
+      if (bootColor) {
+        const boot = new THREE.Mesh(createRoundedBox(1.04, 1.2, 1.04, 0.05, 2), new THREE.MeshStandardMaterial({ color: bootColor }));
+        boot.position.set(0, -1.3, 0); pivot.add(boot);
+
+        const stripe = new THREE.Mesh(createRoundedBox(1.06, 0.1, 1.06, 0.02, 2), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+        stripe.position.set(0, -0.65, 0); pivot.add(stripe);
+      }
+      return pivot;
+    }
+
+    const leftArmPivot = createPivot(-1.4, 4.1, headMaterial, null, isFemale);
+    const rightArmPivot = createPivot(1.4, 4.1, headMaterial, null, isFemale);
+    const leftLegPivot = createPivot(-0.5, 2.1, legsMaterial, isFemale ? 0x111111 : null);
+    const rightLegPivot = createPivot(0.5, 2.1, legsMaterial, isFemale ? 0x111111 : null);
+
+    group.add(leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot);
+
+    return { group, torsoMaterial, legsMaterial, pivots: { leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot } };
+  }
+
+  function showChatBubble(avatarObj, text) {
+    if (avatarObj.currentBubble) avatarObj.group.remove(avatarObj.currentBubble);
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.font = 'bold 32px Arial, sans-serif';
+    const textWidth = ctx.measureText(text).width;
+
+    const padX = 28;
+    const padY = 20;
+    const tailHeight = 18;
+    const borderRadius = 22;
+
+    const width = Math.max(120, textWidth + padX * 2);
+    const bubbleHeight = 32 + padY * 2;
+    const height = bubbleHeight + tailHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // Draw White Roblox Style Chat Bubble
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(0, 0, width, bubbleHeight, borderRadius);
+    ctx.fill();
+
+    // Bottom Tail / Arrow Pointer
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 12, bubbleHeight - 2);
+    ctx.lineTo(width / 2, bubbleHeight + tailHeight);
+    ctx.lineTo(width / 2 + 12, bubbleHeight - 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Render Text (Dark Gray / Black)
+    ctx.fillStyle = '#1A1A1A';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, width / 2, bubbleHeight / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const sprite = new THREE.Sprite(spriteMaterial);
+
+    const aspect = width / height;
+    const worldHeight = 1.8;
+    sprite.scale.set(worldHeight * aspect, worldHeight, 1);
+    sprite.position.set(0, 6.4, 0);
+
+    avatarObj.group.add(sprite);
+    avatarObj.currentBubble = sprite;
+
+    setTimeout(() => { if (avatarObj.currentBubble === sprite) avatarObj.group.remove(sprite); }, 6000);
+  }
+
+  function createRemotePlayerIfNeeded(peerId) {
+    if (isGameInitialized && !remotePlayers[peerId] && peerId !== myPeerId) {
+      const remoteAvatar = buildAvatarMesh();
+      scene.add(remoteAvatar.group);
+      remoteAvatar.targetPos = new THREE.Vector3(0, groundY, 0);
+      remoteAvatar.targetRotY = 0; remoteAvatar.targetLegRot = 0;
+      remotePlayers[peerId] = remoteAvatar;
+    }
+  }
+
+  function handleIncomingPlayerData(senderId, data) {
+    if (senderId === myPeerId) return;
+    createRemotePlayerIfNeeded(senderId);
+    let rp = remotePlayers[senderId];
+
+    if (rp) {
+      if (rp.gender !== data.gender) {
+        scene.remove(rp.group);
+        rp = buildAvatarMesh(data.torsoColor, data.legsColor, data.gender || 'male');
+        scene.add(rp.group);
+        remotePlayers[senderId] = rp;
+      }
+
+      rp.gender = data.gender;
+      rp.targetPos = new THREE.Vector3(data.x, data.y + (data.torsoYOffset || 0), data.z);
+      rp.targetRotY = data.rotY; rp.targetLegRot = data.legRot;
+      rp.username = data.username;
+      rp.torsoHex = data.torsoColor;
+
+      if (data.torsoColor && data.legsColor) {
+        rp.torsoMaterial.color.set(data.torsoColor);
+        rp.legsMaterial.color.set(data.legsColor);
+      }
+      updatePlayerListHud();
+    }
+  }
+
+  // --- Keyboard Controls ---
+  const keys = {};
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape') return toggleSettingsMenu();
+    if (e.code === 'Tab') {
+      e.preventDefault();
+      const hud = document.getElementById('player-list-hud');
+      hud.style.display = (hud.style.display === 'none') ? 'flex' : 'none';
+      return;
+    }
+    if (document.activeElement === chatInput || document.activeElement === document.getElementById('player-search-input') || isSettingsOpen) return;
+    keys[e.code] = true;
+    if (e.code === 'Enter') chatInput.focus();
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (document.activeElement === chatInput || document.activeElement === document.getElementById('player-search-input') || isSettingsOpen) return;
+    keys[e.code] = false;
+  });
+
+  const moveSpeed = 0.18;
+  let verticalVelocity = 0, walkCycle = 0, targetRotation = 0;
+  let isGrounded = true, currentLegRot = 0, idleTimer = 0, torsoYOffset = 0;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!isGameInitialized) return;
+
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0; forward.normalize();
+    const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+    const moveDirection = new THREE.Vector3(0, 0, 0);
+    if (document.activeElement !== chatInput && isSettingsOpen === false) {
+      if (keys['KeyW'] || keys['ArrowUp']) moveDirection.add(forward);
+      if (keys['KeyS'] || keys['ArrowDown']) moveDirection.sub(forward);
+      if (keys['KeyD'] || keys['ArrowRight']) moveDirection.add(right);
+      if (keys['KeyA'] || keys['ArrowLeft']) moveDirection.sub(right);
+    }
+
+    const isMoving = moveDirection.lengthSq() > 0;
+
+    if (isMoving) {
+      moveDirection.normalize();
+      player.position.x += moveDirection.x * moveSpeed;
+      player.position.z += moveDirection.z * moveSpeed;
+      targetRotation = Math.atan2(moveDirection.x, moveDirection.z);
+      walkCycle += 0.2;
+      currentLegRot = Math.sin(walkCycle) * 0.7;
+    } else {
+      currentLegRot = THREE.MathUtils.lerp(currentLegRot, 0, 0.15);
+      idleTimer += 0.03;
+      torsoYOffset = Math.sin(idleTimer * 2) * 0.05;
+    }
+
+    localAvatar.pivots.leftLegPivot.rotation.x = currentLegRot;
+    localAvatar.pivots.rightLegPivot.rotation.x = -currentLegRot;
+    localAvatar.pivots.leftArmPivot.rotation.x = -currentLegRot;
+    localAvatar.pivots.rightArmPivot.rotation.x = currentLegRot;
+
+    let diff = targetRotation - player.rotation.y;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    player.rotation.y += diff * 0.15;
+
+    if (keys['Space'] && isGrounded && document.activeElement !== chatInput && !isSettingsOpen) {
+      verticalVelocity = 0.38;
+      isGrounded = false;
+    }
+
+    if (!isGrounded) {
+      verticalVelocity -= 0.018;
+      player.position.y += verticalVelocity;
+      if (player.position.y <= groundY) {
+        player.position.y = groundY;
+        verticalVelocity = 0;
+        isGrounded = true;
+      }
+    } else {
+      player.position.y = groundY + torsoYOffset;
+    }
+
+    sunLight.position.set(player.position.x + 30, player.position.y + 50, player.position.z + 20);
+    sunLight.target.position.copy(player.position);
+
+    if (currentUser) {
+      const playerPayload = {
+        x: player.position.x, y: groundY, z: player.position.z,
+        rotY: player.rotation.y, legRot: currentLegRot,
+        torsoYOffset: torsoYOffset, username: currentUser.username,
+        gender: currentUser.gender || 'male',
+        torsoColor: currentUser.torsoColor, legsColor: currentUser.legsColor
+      };
+
+      if (currentTargetHostId) localChannel.postMessage({ type: 'RELAY_GAME_DATA', senderPeerId: myPeerId, payload: playerPayload });
+      Object.values(connections).forEach(conn => { if (conn.open && !conn.isLocalChannel) conn.send(playerPayload); });
+    }
+
+    Object.values(remotePlayers).forEach(rp => {
+      if (!rp.targetPos) return;
+      rp.group.position.lerp(rp.targetPos, 0.2);
+      rp.pivots.leftLegPivot.rotation.x = THREE.MathUtils.lerp(rp.pivots.leftLegPivot.rotation.x, rp.targetLegRot, 0.2);
+      rp.pivots.rightLegPivot.rotation.x = THREE.MathUtils.lerp(rp.pivots.rightLegPivot.rotation.x, -rp.targetLegRot, 0.2);
+    });
+
+    const targetOffset = new THREE.Vector3(0, 3, 0);
+    const cameraOffset = camera.position.clone().sub(controls.target);
+    controls.target.copy(player.position).add(targetOffset);
+    camera.position.copy(controls.target).add(cameraOffset);
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  loadAccount();
+  renderServerBrowser();
+</script>
+
+</body>
+</html>
