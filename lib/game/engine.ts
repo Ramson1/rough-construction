@@ -1226,7 +1226,7 @@ export class MatchEngine {
   private onMouseMove(event: MouseEvent): void {
     if (!this.inputEnabled) return;
     if (!this.isLookActive()) return;
-    const scale = 0.0021 * this.sensitivity;
+    const scale = -0.0021 * this.sensitivity;
     this.viewYaw += event.movementX * scale;
     this.viewPitch = clamp(this.viewPitch - event.movementY * scale, -1.32, 1.32);
   }
